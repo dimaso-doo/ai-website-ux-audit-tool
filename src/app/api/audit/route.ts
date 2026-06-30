@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { applyCrossPageChecks } from "@/lib/audit/checks";
 import { extractPage } from "@/lib/audit/extractor";
+import { runBrowserChecks } from "@/lib/audit/browser-checks";
 import { generateAuditReport } from "@/lib/audit/openai";
+import { getPageSpeedResult } from "@/lib/audit/pagespeed";
 import { buildAuditPrompt } from "@/lib/audit/prompt";
 import { normalizeInputUrl } from "@/lib/audit/url";
 import { getDimasoStyleMemory, saveAuditFeedback } from "@/lib/storage/feedback";
@@ -33,11 +35,21 @@ export async function POST(request: Request) {
     }
 
     const pagesWithChecks = applyCrossPageChecks(extracted);
+    const enhancedPages = [];
+
+    for (const [index, page] of pagesWithChecks.entries()) {
+      const [performance, browserChecks] = await Promise.all([
+        index < 5 ? getPageSpeedResult(page.url, "mobile") : Promise.resolve(undefined),
+        index < 10 ? runBrowserChecks(page.url) : Promise.resolve(undefined),
+      ]);
+      enhancedPages.push({ ...page, performance, browserChecks });
+    }
+
     const styleMemory = getDimasoStyleMemory();
     const report = await generateAuditReport(
       buildAuditPrompt({
         websiteUrl: root.toString(),
-        pages: pagesWithChecks,
+        pages: enhancedPages,
         styleMemory,
       }),
     );
@@ -46,13 +58,13 @@ export async function POST(request: Request) {
       websiteUrl: root.toString(),
       selectedPages,
       report,
-      scanData: pagesWithChecks,
+      scanData: enhancedPages,
       tags: [],
       comments: "",
       rating: null,
     });
 
-    return NextResponse.json({ report, scanData: pagesWithChecks });
+    return NextResponse.json({ report, scanData: enhancedPages });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not run audit." },

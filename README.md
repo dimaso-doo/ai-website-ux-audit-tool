@@ -11,6 +11,8 @@ This is not a public SaaS. There is no login, billing, dashboard, screenshots, P
 - Tailwind CSS
 - Node.js API routes
 - OpenAI Responses API
+- Google PageSpeed Insights API, optional
+- Playwright browser checks using local Chrome
 - SQLite via Node built-in `node:sqlite`
 
 ## Setup
@@ -32,6 +34,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - `OPENAI_API_KEY`: required for generating audit reports.
 - `OPENAI_MODEL`: optional. Defaults to `gpt-5.4-mini`.
+- `PAGESPEED_API_KEY`: optional Google PageSpeed Insights API key.
 - `DATABASE_URL`: optional local SQLite path. Defaults to `data/audit-feedback.sqlite`.
 
 ## Main Flow
@@ -62,6 +65,8 @@ Local SQLite files are ignored by git.
 ## Limitations
 
 This MVP analyzes HTML text and structure only. It does not use screenshots and must not claim to evaluate visual design, spacing, colors, layout quality, or visual hierarchy. Those require screenshot-based review or human review.
+
+When configured, the audit also includes Google PageSpeed Insights lab data. Browser checks use Playwright and local Chrome to verify basic CTA behavior, mobile viewport overflow, form structure, and keyboard focus signals. These are still not screenshot-based visual design reviews.
 
 ## Scripts
 

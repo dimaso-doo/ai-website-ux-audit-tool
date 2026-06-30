@@ -20,6 +20,8 @@ export function buildAuditPrompt(params: {
     wordCount: page.wordCount,
     signals: page.signals,
     checks: page.checks,
+    performance: page.performance,
+    browserChecks: page.browserChecks,
     bodyTextSample: page.bodyText.slice(0, 6000),
   }));
 
@@ -41,9 +43,11 @@ Default Dimaso audit style rules:
 - Mention when visual review needs screenshots or human review.
 
 Important limitations:
-- This MVP uses HTML text and structure only.
+- This MVP uses HTML text and structure, Google PageSpeed Insights when configured, and browser-based DOM/interaction checks when available.
 - Do not judge visual design, spacing, colors, layout quality, or visual hierarchy.
 - If a visual claim would require screenshots or human review, say so.
+- Clearly label whether a finding is verified from HTML, PageSpeed data, browser test data, or an assumption.
+- If PageSpeed or browser checks are skipped/error for a page, say that specific layer was not verified for that page.
 
 Report format:
 1. Overall UX / conversion score
@@ -81,6 +85,8 @@ Rules:
 - Focus on lead generation and conversion.
 - Suggest concrete implementation tasks.
 - Write in English by default.
+- Do not end with upsell-style offers such as "If you want, I can...".
+- End with the limitations section only.
 
 Extracted scan data:
 ${JSON.stringify(pageData, null, 2)}`;
