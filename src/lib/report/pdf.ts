@@ -1,0 +1,83 @@
+import PDFDocument from "pdfkit";
+
+export async function createReportPdf(params: {
+  websiteUrl: string;
+  report: string;
+}) {
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 48,
+      info: {
+        Title: "AI Website UX Audit",
+        Author: "Dimaso",
+      },
+    });
+
+    doc.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+
+    doc.font("Helvetica-Bold").fontSize(20).fillColor("#0f172a").text("AI Website UX Audit", {
+      align: "left",
+    });
+    doc.moveDown(0.35);
+    doc.font("Helvetica").fontSize(10).fillColor("#475569").text(`Website: ${params.websiteUrl || "Not provided"}`);
+    doc.text(`Generated: ${new Date().toISOString().slice(0, 10)}`);
+    doc.moveDown(1);
+    doc.strokeColor("#cbd5e1").lineWidth(1).moveTo(48, doc.y).lineTo(547, doc.y).stroke();
+    doc.moveDown(1);
+
+    const lines = params.report.replace(/\r\n/g, "\n").split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (!trimmed) {
+        doc.moveDown(0.45);
+        continue;
+      }
+
+      if (/^#{1,3}\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
+        ensureSpace(doc, 42);
+        doc.font("Helvetica-Bold").fontSize(13).fillColor("#0f172a").text(trimmed.replace(/^#{1,3}\s+/, ""), {
+          paragraphGap: 4,
+        });
+        continue;
+      }
+
+      if (/^- /.test(trimmed)) {
+        ensureSpace(doc, 24);
+        doc.font("Helvetica").fontSize(9).fillColor("#334155").text(`- ${trimmed.replace(/^- /, "")}`, {
+          indent: 12,
+          paragraphGap: 2,
+          lineGap: 1.5,
+        });
+        continue;
+      }
+
+      ensureSpace(doc, 30);
+      doc.font("Helvetica").fontSize(9.5).fillColor("#1e293b").text(trimmed, {
+        paragraphGap: 3,
+        lineGap: 1.5,
+      });
+    }
+
+    const pageCount = doc.bufferedPageRange().count;
+    for (let index = 0; index < pageCount; index += 1) {
+      doc.switchToPage(index);
+      doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`Dimaso internal audit - Page ${index + 1}`, 48, 810, {
+        align: "center",
+        width: 499,
+      });
+    }
+
+    doc.end();
+  });
+}
+
+function ensureSpace(doc: PDFKit.PDFDocument, height: number) {
+  if (doc.y + height > 790) {
+    doc.addPage();
+  }
+}

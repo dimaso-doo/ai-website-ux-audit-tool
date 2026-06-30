@@ -134,6 +134,44 @@ export default function Home() {
     }
   }
 
+  async function downloadPdf() {
+    if (!discovery || !report) return;
+    setBusy(true);
+    setError("");
+    setStatus("Generating PDF");
+
+    try {
+      const response = await fetch("/api/report-pdf", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          websiteUrl: discovery.normalizedUrl,
+          report,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Could not generate PDF.");
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "dimaso-ai-ux-audit.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+      setStatus("Ready for feedback");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Could not generate PDF.");
+      setStatus("Ready for feedback");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function togglePage(pageUrl: string) {
     setSelectedPages((current) => {
       if (current.includes(pageUrl)) return current.filter((item) => item !== pageUrl);
@@ -250,7 +288,16 @@ export default function Home() {
 
         {report ? (
           <section className="grid gap-4 rounded border border-slate-200 bg-white p-4">
-            <h2 className="text-xl font-semibold">AI audit report</h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-xl font-semibold">AI audit report</h2>
+              <button
+                onClick={downloadPdf}
+                disabled={busy}
+                className="min-h-10 rounded border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                Download PDF
+              </button>
+            </div>
             <pre className="max-h-[720px] overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6">
               {report}
             </pre>

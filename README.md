@@ -13,6 +13,7 @@ This is not a public SaaS. There is no login, billing, dashboard, screenshots, P
 - OpenAI Responses API
 - Google PageSpeed Insights API, optional
 - Playwright browser checks using local Chrome
+- Small PDF report download
 - SQLite via Node built-in `node:sqlite`
 
 ## Setup
