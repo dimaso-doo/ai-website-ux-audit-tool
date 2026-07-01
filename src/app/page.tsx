@@ -30,6 +30,7 @@ export default function Home() {
   const [discovery, setDiscovery] = useState<DiscoveryResult | null>(null);
   const [selectedPages, setSelectedPages] = useState<string[]>([]);
   const [report, setReport] = useState("");
+  const [clientReport, setClientReport] = useState("");
   const [scanData, setScanData] = useState<ExtractedPage[] | null>(null);
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState("");
@@ -43,6 +44,7 @@ export default function Home() {
     setBusy(true);
     setError("");
     setReport("");
+    setClientReport("");
     setScanData(null);
     setStatus("Validating URL");
 
@@ -72,6 +74,7 @@ export default function Home() {
     setBusy(true);
     setError("");
     setReport("");
+    setClientReport("");
     setScanData(null);
     setStatus("Extracting selected pages");
 
@@ -89,6 +92,7 @@ export default function Home() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Audit failed.");
       setReport(data.report);
+      setClientReport(data.clientReport || "");
       setScanData(data.scanData);
       setStatus("Saving audit");
       setStatus("Ready for feedback");
@@ -114,7 +118,10 @@ export default function Home() {
           websiteUrl: discovery.normalizedUrl,
           selectedPages,
           report,
-          scanData,
+          scanData: {
+            pages: scanData,
+            clientReport,
+          },
           rating: rating ? Number(rating) : null,
           tags,
           comments: feedback,
@@ -134,8 +141,9 @@ export default function Home() {
     }
   }
 
-  async function downloadPdf() {
-    if (!discovery || !report) return;
+  async function downloadPdf(kind: "client" | "internal") {
+    const reportText = kind === "client" ? clientReport : report;
+    if (!discovery || !reportText) return;
     setBusy(true);
     setError("");
     setStatus("Generating PDF");
@@ -146,7 +154,7 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           websiteUrl: discovery.normalizedUrl,
-          report,
+          report: reportText,
         }),
       });
       if (!response.ok) {
@@ -158,7 +166,7 @@ export default function Home() {
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = "dimaso-ai-ux-audit.pdf";
+      link.download = kind === "client" ? "dimaso-website-growth-snapshot.pdf" : "dimaso-internal-ai-ux-audit.pdf";
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -288,14 +296,38 @@ export default function Home() {
 
         {report ? (
           <section className="grid gap-4 rounded border border-slate-200 bg-white p-4">
+            {clientReport ? (
+              <div className="grid gap-4 border-b border-slate-200 pb-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Client-ready teaser</p>
+                    <h2 className="text-xl font-semibold">Website Growth Snapshot</h2>
+                  </div>
+                  <button
+                    onClick={() => downloadPdf("client")}
+                    disabled={busy}
+                    className="min-h-10 rounded border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:bg-slate-100"
+                  >
+                    Download client PDF
+                  </button>
+                </div>
+                <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-800">
+                  {clientReport}
+                </pre>
+              </div>
+            ) : null}
+
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-xl font-semibold">AI audit report</h2>
+              <div>
+                <p className="text-sm font-medium text-slate-500">Internal full version</p>
+                <h2 className="text-xl font-semibold">Full AI audit report</h2>
+              </div>
               <button
-                onClick={downloadPdf}
+                onClick={() => downloadPdf("internal")}
                 disabled={busy}
                 className="min-h-10 rounded border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:bg-slate-100"
               >
-                Download PDF
+                Download internal PDF
               </button>
             </div>
             <pre className="max-h-[720px] overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6">

@@ -4,7 +4,7 @@ import { extractPage } from "@/lib/audit/extractor";
 import { runBrowserChecks } from "@/lib/audit/browser-checks";
 import { generateAuditReport } from "@/lib/audit/openai";
 import { getPageSpeedResult } from "@/lib/audit/pagespeed";
-import { buildAuditPrompt } from "@/lib/audit/prompt";
+import { buildAuditPrompt, buildClientTeaserPrompt } from "@/lib/audit/prompt";
 import { normalizeInputUrl } from "@/lib/audit/url";
 import { getDimasoStyleMemory, saveAuditFeedback } from "@/lib/storage/feedback";
 
@@ -53,18 +53,27 @@ export async function POST(request: Request) {
         styleMemory,
       }),
     );
+    const clientReport = await generateAuditReport(
+      buildClientTeaserPrompt({
+        websiteUrl: root.toString(),
+        internalReport: report,
+      }),
+    );
 
     saveAuditFeedback({
       websiteUrl: root.toString(),
       selectedPages,
       report,
-      scanData: enhancedPages,
+      scanData: {
+        pages: enhancedPages,
+        clientReport,
+      },
       tags: [],
       comments: "",
       rating: null,
     });
 
-    return NextResponse.json({ report, scanData: enhancedPages });
+    return NextResponse.json({ report, clientReport, scanData: enhancedPages });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not run audit." },
