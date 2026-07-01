@@ -9,6 +9,7 @@ export async function createReportPdf(params: {
     const doc = new PDFDocument({
       size: "A4",
       margin: 48,
+      bufferPages: true,
       info: {
         Title: "AI Website UX Audit",
         Author: "Dimaso",
@@ -63,15 +64,17 @@ export async function createReportPdf(params: {
       });
     }
 
-    const pageCount = doc.bufferedPageRange().count;
-    for (let index = 0; index < pageCount; index += 1) {
-      doc.switchToPage(index);
-      doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`Dimaso internal audit - Page ${index + 1}`, 48, 810, {
+    const pageRange = doc.bufferedPageRange();
+    for (let offset = 0; offset < pageRange.count; offset += 1) {
+      doc.switchToPage(pageRange.start + offset);
+      doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`Dimaso internal audit - Page ${offset + 1}`, 48, 782, {
         align: "center",
+        lineBreak: false,
         width: 499,
       });
     }
 
+    doc.flushPages();
     doc.end();
   });
 }
