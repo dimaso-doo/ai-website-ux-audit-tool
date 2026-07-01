@@ -298,6 +298,27 @@ export default function Home() {
 
         {report ? (
           <section className="grid gap-4 rounded border border-slate-200 bg-white p-4">
+            {scanData?.length ? (
+              <div className="grid gap-3 rounded border border-slate-200 bg-slate-50 p-4">
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Verified audit scope</p>
+                  <h2 className="text-lg font-semibold">Analyzed pages</h2>
+                </div>
+                <div className="grid gap-2">
+                  {scanData.map((page) => (
+                    <div key={page.url} className="rounded border border-slate-200 bg-white p-3">
+                      <div className="break-words font-mono text-xs text-slate-700">{page.url}</div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {page.title || "No title found"} · HTTP {page.statusCode}
+                        {page.performance ? ` · PageSpeed: ${page.performance.status}` : ""}
+                        {page.browserChecks ? ` · Browser check: ${page.browserChecks.status}` : ""}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {clientReport ? (
               <div className="grid gap-4 border-b border-slate-200 pb-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
