@@ -28,7 +28,7 @@ export async function createReportPdf(params: {
       align: "left",
     });
     doc.moveDown(0.35);
-    doc.font("Helvetica").fontSize(10).fillColor("#475569").text(`Website: ${params.websiteUrl || "Not provided"}`);
+    doc.font("Helvetica-Bold").fontSize(11).fillColor("#334155").text(`Website reviewed: ${params.websiteUrl || "Not provided"}`);
     doc.text(`Generated: ${new Date().toISOString().slice(0, 10)}`);
     doc.moveDown(1);
     doc.strokeColor("#cbd5e1").lineWidth(1).moveTo(48, doc.y).lineTo(547, doc.y).stroke();

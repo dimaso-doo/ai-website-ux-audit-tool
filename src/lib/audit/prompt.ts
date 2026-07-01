@@ -112,6 +112,9 @@ Critical rules:
 - Do not include internal confidence labels unless naturally useful.
 - Do not include technical implementation noise unless it helps the client understand the business impact.
 - Do not make claims that were not supported by the internal audit.
+- Make the report feel specific to this website, not generic.
+- Include the website URL and the most relevant reviewed page URLs near the top.
+- For each main opportunity, mention the page or page type where it was observed.
 - Do not judge visual design, colors, spacing, layout quality, or visual hierarchy unless the internal audit has screenshot/human review evidence.
 - Keep a professional web agency tone.
 - Be helpful, specific, and direct.
@@ -120,21 +123,33 @@ Critical rules:
 Format:
 # Website Growth Snapshot
 
+## Website Reviewed
+Include the website URL and a one-sentence note about what was reviewed.
+
+## Pages Reviewed
+List 3-8 key URLs or page labels from the internal audit. If many pages were reviewed, show the most important ones.
+
 ## Quick Summary
 2-3 short paragraphs.
 
 ## Main Opportunities
-5-7 bullets. Each bullet should include what was observed and why it matters.
+5-7 bullets. Each bullet must include:
+- Observed on: page URL or page label
+- What we noticed
+- Why it matters for enquiries, trust, or conversion
 
 ## Recommended First Fixes
 3-5 numbered fixes, practical and action-oriented.
+
+## What a Full Review Would Clarify
+3-5 bullets describing deeper checks worth reviewing next, such as message clarity, funnel flow, form friction, page speed, mobile interaction, SEO structure, and trust-building content.
 
 ## Why This Matters
 Short paragraph focused on enquiries, trust, conversion, and wasted traffic.
 
 ## Suggested Next Step
-Short, soft CTA inviting a review call or discussion.
+Short, soft CTA inviting a review call or discussion of the full review.
 
 Length:
-Keep it around 500-800 words.`;
+Keep it around 700-1000 words.`;
 }
