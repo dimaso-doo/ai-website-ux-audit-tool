@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const { websiteUrl, report } = await request.json();
+    const { websiteUrl, report, title, footerLabel } = await request.json();
     if (!report || typeof report !== "string") {
       return NextResponse.json({ error: "Report text is required." }, { status: 400 });
     }
@@ -13,6 +13,8 @@ export async function POST(request: Request) {
     const pdf = await createReportPdf({
       websiteUrl: String(websiteUrl || ""),
       report,
+      title: typeof title === "string" && title.trim() ? title.trim() : undefined,
+      footerLabel: typeof footerLabel === "string" && footerLabel.trim() ? footerLabel.trim() : undefined,
     });
 
     const body = new Uint8Array(pdf);

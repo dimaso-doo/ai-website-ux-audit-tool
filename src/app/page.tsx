@@ -155,6 +155,8 @@ export default function Home() {
         body: JSON.stringify({
           websiteUrl: discovery.normalizedUrl,
           report: reportText,
+          title: kind === "client" ? "Website Growth Snapshot" : "AI Website UX Audit",
+          footerLabel: kind === "client" ? "Dimaso website review" : "Dimaso internal audit",
         }),
       });
       if (!response.ok) {

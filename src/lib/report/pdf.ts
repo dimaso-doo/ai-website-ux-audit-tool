@@ -3,15 +3,19 @@ import PDFDocument from "pdfkit";
 export async function createReportPdf(params: {
   websiteUrl: string;
   report: string;
+  title?: string;
+  footerLabel?: string;
 }) {
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
+    const title = params.title || "AI Website UX Audit";
+    const footerLabel = params.footerLabel || "Dimaso internal audit";
     const doc = new PDFDocument({
       size: "A4",
       margin: 48,
       bufferPages: true,
       info: {
-        Title: "AI Website UX Audit",
+        Title: title,
         Author: "Dimaso",
       },
     });
@@ -20,7 +24,7 @@ export async function createReportPdf(params: {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    doc.font("Helvetica-Bold").fontSize(20).fillColor("#0f172a").text("AI Website UX Audit", {
+    doc.font("Helvetica-Bold").fontSize(20).fillColor("#0f172a").text(title, {
       align: "left",
     });
     doc.moveDown(0.35);
@@ -67,7 +71,7 @@ export async function createReportPdf(params: {
     const pageRange = doc.bufferedPageRange();
     for (let offset = 0; offset < pageRange.count; offset += 1) {
       doc.switchToPage(pageRange.start + offset);
-      doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`Dimaso internal audit - Page ${offset + 1}`, 48, 782, {
+      doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`${footerLabel} - Page ${offset + 1}`, 48, 782, {
         align: "center",
         lineBreak: false,
         width: 499,
