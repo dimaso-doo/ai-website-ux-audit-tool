@@ -45,7 +45,7 @@ export async function createReportPdf(params: {
 
       if (/^#{1,3}\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
         ensureSpace(doc, 42);
-        doc.font("Helvetica-Bold").fontSize(13).fillColor("#0f172a").text(trimmed.replace(/^#{1,3}\s+/, ""), {
+        doc.font("Helvetica-Bold").fontSize(13).fillColor("#0f172a").text(stripMarkdownBold(trimmed.replace(/^#{1,3}\s+/, "")), {
           paragraphGap: 4,
         });
         continue;
@@ -53,7 +53,7 @@ export async function createReportPdf(params: {
 
       if (/^- /.test(trimmed)) {
         ensureSpace(doc, 24);
-        doc.font("Helvetica").fontSize(9).fillColor("#334155").text(`- ${trimmed.replace(/^- /, "")}`, {
+        doc.font("Helvetica").fontSize(9).fillColor("#334155").text(`- ${stripMarkdownBold(trimmed.replace(/^- /, ""))}`, {
           indent: 12,
           paragraphGap: 2,
           lineGap: 1.5,
@@ -62,7 +62,7 @@ export async function createReportPdf(params: {
       }
 
       ensureSpace(doc, 30);
-      doc.font("Helvetica").fontSize(9.5).fillColor("#1e293b").text(trimmed, {
+      doc.font("Helvetica").fontSize(9.5).fillColor("#1e293b").text(stripMarkdownBold(trimmed), {
         paragraphGap: 3,
         lineGap: 1.5,
       });
@@ -87,4 +87,8 @@ function ensureSpace(doc: PDFKit.PDFDocument, height: number) {
   if (doc.y + height > 790) {
     doc.addPage();
   }
+}
+
+function stripMarkdownBold(text: string) {
+  return text.replace(/\*\*([^*]+)\*\*/g, "$1");
 }

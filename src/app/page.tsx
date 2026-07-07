@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import type { DiscoveredPage, ExtractedPage } from "@/lib/audit/types";
 
 const FEEDBACK_TAGS = [
@@ -334,9 +335,7 @@ export default function Home() {
                     Download client PDF
                   </button>
                 </div>
-                <pre className="max-h-[520px] overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-800">
-                  {clientReport}
-                </pre>
+                <FormattedReport className="max-h-[520px] overflow-auto rounded border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-800" text={clientReport} />
               </div>
             ) : null}
 
@@ -353,9 +352,7 @@ export default function Home() {
                 Download internal PDF
               </button>
             </div>
-            <pre className="max-h-[720px] overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-6">
-              {report}
-            </pre>
+            <FormattedReport className="max-h-[720px] overflow-auto rounded border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-800" text={report} />
 
             <div className="grid gap-3 border-t border-slate-200 pt-4">
               <label className="text-sm font-medium" htmlFor="feedback">
@@ -408,4 +405,62 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+function FormattedReport({ text, className }: { text: string; className: string }) {
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+
+  return (
+    <div className={className}>
+      {lines.map((line, index) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={index} className="h-3" />;
+
+        if (/^#{1,3}\s+/.test(trimmed)) {
+          return (
+            <h3 key={index} className="mt-4 first:mt-0 text-lg font-semibold text-slate-950">
+              {renderInlineMarkdown(trimmed.replace(/^#{1,3}\s+/, ""))}
+            </h3>
+          );
+        }
+
+        if (/^\d+\.\s+/.test(trimmed)) {
+          return (
+            <h3 key={index} className="mt-4 first:mt-0 text-base font-semibold text-slate-950">
+              {renderInlineMarkdown(trimmed)}
+            </h3>
+          );
+        }
+
+        if (/^- /.test(trimmed)) {
+          return (
+            <div key={index} className="flex gap-2 py-0.5">
+              <span className="mt-0.5 text-slate-500">•</span>
+              <p className="min-w-0 flex-1">{renderInlineMarkdown(trimmed.replace(/^- /, ""))}</p>
+            </div>
+          );
+        }
+
+        return (
+          <p key={index} className="py-0.5">
+            {renderInlineMarkdown(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-semibold text-slate-950">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
 }
